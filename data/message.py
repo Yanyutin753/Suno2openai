@@ -271,7 +271,7 @@ def clean_up(cookie, db_manager, song_gen):
     def run_in_new_loop():
         new_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(new_loop)
-        new_loop.run_until_complete(async_cleanup(cookie, db_manager, song_gen))
+        new_loop.run_until_complete(end_chat(cookie, db_manager, song_gen))
         new_loop.close()
 
     try:
@@ -284,27 +284,9 @@ def clean_up(cookie, db_manager, song_gen):
             thread.join()
         else:
             # 当前事件循环未运行，直接使用当前事件循环
-            loop.run_until_complete(async_cleanup(cookie, db_manager, song_gen))
+            loop.run_until_complete(end_chat(cookie, db_manager, song_gen))
     except Exception as e:
         logger.error(f"结束聊天时出错: {str(e)}")
-
-
-async def async_cleanup(cookie, db_manager, song_gen):
-    try:
-        task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
-        await task
-        await asyncio.sleep(3)
-    except Exception as e:
-        logger.error(f"异步清理任务出错: {str(e)}")
-
-
-async def run_task_with_timeout(coro, timeout):
-    try:
-        await asyncio.wait_for(coro, timeout=timeout)
-    except asyncio.TimeoutError:
-        logger.error("任务执行超时")
-    except Exception as e:
-        logger.error(f"任务执行出错: {str(e)}")
 
 
 async def end_chat(cookie, db_manager, song_gen):
