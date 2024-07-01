@@ -265,6 +265,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
         finally:
             clean_up(cookie, db_manager, song_gen)
 
+
 def clean_up(cookie, db_manager, song_gen):
     loop = asyncio.get_event_loop()
 
