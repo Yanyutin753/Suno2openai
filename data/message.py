@@ -263,23 +263,29 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
 
         finally:
-            await clean_up(cookie, db_manager, song_gen)
+            clean_up(cookie, db_manager, song_gen)
 
 
-async def clean_up(cookie, db_manager, song_gen):
-    loop = None
+def clean_up(cookie, db_manager, song_gen):
     try:
+        # 获取当前事件循环
         loop = asyncio.get_event_loop()
-        task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
+
+        # 如果事件循环正在运行，则创建一个新任务并等待其完成
         if loop.is_running():
-            loop.create_task(task)
-            await asyncio.sleep(3)
+            async def async_cleanup():
+                task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
+                await task
+            loop.run_until_complete(async_cleanup())
         else:
-            await loop.run_until_complete(task)
+            # 如果事件循环未运行，则直接运行任务
+            task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
+            loop.run_until_complete(task)
+            loop.run_until_complete(asyncio.sleep(3))
     except Exception as e:
         logger.error(f"结束聊天时出错: {str(e)}")
     finally:
-        if loop and not loop.is_running():
+        if not loop.is_running():
             logger.info(f"请求生成音乐结束，已关闭所有进程！")
             loop.close()
 
