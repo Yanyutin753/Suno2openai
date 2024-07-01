@@ -96,7 +96,6 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
 
             yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"role": "assistant", "content": tem_text}, "finish_reason": None}]})}\n\n"""
             for clip_id in clip_ids:
-                count = 0
                 while True:
                     # 全部任务达成
                     # if (_return_Forever_url and _return_ids and _return_tags and
@@ -230,11 +229,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                     return
 
                                 else:
-                                    count += 1
-                                    if count % 34 == 0:
-                                        content_wait = "🎵\n"
-                                    else:
-                                        content_wait = "🎵"
+                                    content_wait = "🎵"
                                     yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": content_wait}, "finish_reason": None}]})}\n\n"""
                                     await asyncio.sleep(3)
                                     continue
