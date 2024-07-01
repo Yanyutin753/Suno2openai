@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import asyncio
 import json
+import threading
 import time
 
 from fastapi import HTTPException
@@ -267,34 +268,35 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
 
 
 def clean_up(cookie, db_manager, song_gen):
+    def run_in_new_loop():
+        new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(new_loop)
+        new_loop.run_until_complete(async_cleanup(cookie, db_manager, song_gen))
+        new_loop.close()
+
     try:
-        # 获取当前事件循环
         loop = asyncio.get_event_loop()
 
-        # 如果事件循环正在运行，则在新的事件循环中运行任务
         if loop.is_running():
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            new_loop.run_until_complete(async_cleanup(cookie, db_manager, song_gen))
-            new_loop.close()
-            asyncio.set_event_loop(loop)
+            # 当前事件循环正在运行，在新线程中启动新的事件循环
+            thread = threading.Thread(target=run_in_new_loop)
+            thread.start()
+            thread.join()
         else:
-            # 如果事件循环未运行，则直接运行任务
+            # 当前事件循环未运行，直接使用当前事件循环
             loop.run_until_complete(async_cleanup(cookie, db_manager, song_gen))
     except Exception as e:
         logger.error(f"结束聊天时出错: {str(e)}")
-    finally:
-        if not loop.is_running():
-            logger.info(f"请求生成音乐结束，已关闭所有进程！")
-            loop.close()
 
 
 async def async_cleanup(cookie, db_manager, song_gen):
     try:
-        task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=30)
+        task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
         await task
+        await asyncio.sleep(3)
     except Exception as e:
         logger.error(f"异步清理任务出错: {str(e)}")
+
 
 async def run_task_with_timeout(coro, timeout):
     try:
