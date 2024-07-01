@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import asyncio
 import json
-import threading
 import time
 
 from fastapi import HTTPException
@@ -266,27 +265,21 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
         finally:
             clean_up(cookie, db_manager, song_gen)
 
-
 def clean_up(cookie, db_manager, song_gen):
-    def run_in_new_loop():
-        new_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(new_loop)
-        new_loop.run_until_complete(end_chat(cookie, db_manager, song_gen))
-        new_loop.close()
+    loop = asyncio.get_event_loop()
 
-    try:
-        loop = asyncio.get_event_loop()
+    async def async_cleanup_wrapper():
+        try:
+            await end_chat(cookie, db_manager, song_gen)
+        except Exception as e:
+            logger.error(f"结束聊天时出错: {str(e)}")
 
-        if loop.is_running():
-            # 当前事件循环正在运行，在新线程中启动新的事件循环
-            thread = threading.Thread(target=run_in_new_loop)
-            thread.start()
-            thread.join()
-        else:
-            # 当前事件循环未运行，直接使用当前事件循环
-            loop.run_until_complete(end_chat(cookie, db_manager, song_gen))
-    except Exception as e:
-        logger.error(f"结束聊天时出错: {str(e)}")
+    if loop.is_running():
+        # 如果事件循环正在运行，调度新的协程来执行清理任务
+        asyncio.run_coroutine_threadsafe(async_cleanup_wrapper(), loop)
+    else:
+        # 如果事件循环未运行，则直接运行任务
+        loop.run_until_complete(async_cleanup_wrapper())
 
 
 async def end_chat(cookie, db_manager, song_gen):
