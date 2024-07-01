@@ -5,7 +5,6 @@ import time
 
 from fastapi import HTTPException
 from starlette.responses import StreamingResponse, JSONResponse
-from tenacity import stop_after_attempt, wait_random, retry
 
 from exception.MaxTokenException import MaxTokenException
 from exception.PromptException import PromptException
@@ -237,6 +236,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                     continue
                             except:
                                 pass
+            break
 
         except MaxTokenException as e:
             yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": str(e)}, "finish_reason": None}]})}\n\n"""
@@ -280,7 +280,6 @@ def clean_up(cookie, db_manager, song_gen):
         loop.run_until_complete(async_cleanup_wrapper())
 
 
-@retry(stop=stop_after_attempt(RETRIES + 2), wait=wait_random(min=0.10, max=0.3))
 async def end_chat(cookie, db_manager, song_gen):
     try:
         start_time = int(time.time())
