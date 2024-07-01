@@ -281,7 +281,6 @@ def clean_up(cookie, db_manager, song_gen):
             # 如果事件循环未运行，则直接运行任务
             task = run_task_with_timeout(end_chat(cookie, db_manager, song_gen), timeout=3)
             loop.run_until_complete(task)
-            loop.run_until_complete(asyncio.sleep(3))
     except Exception as e:
         logger.error(f"结束聊天时出错: {str(e)}")
     finally:
