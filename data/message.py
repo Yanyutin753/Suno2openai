@@ -5,6 +5,7 @@ import time
 
 from fastapi import HTTPException
 from starlette.responses import StreamingResponse, JSONResponse
+from tenacity import stop_after_attempt, wait_random, retry
 
 from exception.MaxTokenException import MaxTokenException
 from exception.PromptException import PromptException
@@ -278,6 +279,7 @@ def clean_up(cookie, db_manager, song_gen):
         loop.run_until_complete(async_cleanup_wrapper())
 
 
+@retry(stop=stop_after_attempt(RETRIES + 2), wait=wait_random(min=0.10, max=0.3))
 async def end_chat(cookie, db_manager, song_gen):
     try:
         start_time = int(time.time())
@@ -285,8 +287,7 @@ async def end_chat(cookie, db_manager, song_gen):
             remaining_count = await song_gen.get_limit_left()
             await db_manager.delete_song_ids(remaining_count, cookie)
             end_time = int(time.time())
-            logger.info(
-                f"该账号成功执行了删除cookie songID的操作, 剩余次数{remaining_count}次, 耗时：{end_time - start_time}秒")
+            logger.info(f"该账号成功执行了删除cookie songID的操作, 剩余次数{remaining_count}次, 耗时：{end_time - start_time}秒")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"结束聊天时出错: {str(e)}")
 
