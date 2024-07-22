@@ -226,42 +226,39 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                                               f"**🤗还想听更多歌吗，快来告诉我**🎶✨\n")
                                 else:
                                     Video_Markdown_Content = f"""
-                                        ### 📺 CDN视频链接
-                                        
-                                        ```html
-                                            <!DOCTYPE html>
-                                            <html lang="en">
-                                            <head>
-                                                <meta charset="UTF-8">
-                                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                                <title>suno音乐视频预览</title>
-                                                <style>
-                                                    body, html {{
-                                                        margin: 0;
-                                                        padding: 0;
-                                                        width: 100%;
-                                                        height: 100%;
-                                                        display: flex;
-                                                        justify-content: center;
-                                                        align-items: center;
-                                                        background-color: black;
-                                                    }}
-                                                    video {{
-                                                        max-width: 100%;
-                                                        max-height: 100%;
-                                                    }}
-                                                </style>
-                                            </head>
-                                            <body>
-                                                <video controls>
-                                                    <source src="https://cdn1.suno.ai/{song_id_1}.mp4" type="video/mp4">
-                                                </video>
-                                            </body>
-                                            </html>
-                                        ```
-                                        ### 👀 更多
-        
-                                        **🤗还想听更多歌吗，快来告诉我**🎶✨
+                                    ### 📺 CDN视频链接
+
+                                    ```html
+                                    <!DOCTYPE html>
+                                    <html lang="en">
+                                    <head>
+                                        <meta charset="UTF-8">
+                                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                        <title>suno音乐视频预览</title>
+                                        <style>
+                                            body, html {{
+                                                margin: 0;
+                                                padding: 0;
+                                                width: 100%;
+                                                height: 100%;
+                                                display: flex;
+                                                justify-content: center;
+                                                align-items: center;
+                                                background-color: black;
+                                            }}
+                                            video {{
+                                                max-width: 100%;
+                                                max-height: 100%;
+                                            }}
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <video controls>
+                                            <source src="https://cdn1.suno.ai/{song_id_1}.mp4" type="video/mp4">
+                                        </video>
+                                    </body>
+                                    </html>
+                                    ```
                                     """
                                 yield str(
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Aideo_Markdown_Content}, "finish_reason": None}]})}\n\n""")
