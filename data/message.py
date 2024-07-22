@@ -19,6 +19,7 @@ from util.utils import generate_music, get_feed
 async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                         timeStamp, ModelVersion, tags=None, title=None,
                         continue_at=None, continue_clip_id=None):
+    chat_user_message = str(chat_user_message).strip()
     for try_count in range(RETRIES):
         user_html = False
         if ModelVersion == "suno-v3":
@@ -53,7 +54,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
         cookie = None
         song_gen = None
         try:
-            tem_text = "\n### 🤯 Creating\n\n```suno\n{prompt:" + f"{chat_user_message}" + "}\n```\n\n"
+            tem_text = "\n### 🤯 Creating\n\n```suno\n{prompt:" + f"{chat_user_message}" + "}```\n\n"
             if len(chat_user_message) > 200:
                 raise MaxTokenException(f"{tem_text}### 🚨 违规\n\n- **歌曲提示词**：`{chat_user_message}`，"
                                         f"输入的歌曲提示词长度超过`200`，歌曲创作失败😭\n\n### "
@@ -225,41 +226,41 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                                               f"\n### 👀 更多\n\n"
                                                               f"**🤗还想听更多歌吗，快来告诉我**🎶✨\n")
                                 else:
-                                    Video_Markdown_Content = f"""
-                                    ### 📺 CDN视频链接
+                                    Video_Markdown_Content = (
+                                        f"### 📺 CDN视频链接\n\n"
+                                        f"```html\n"
+                                        f"<!DOCTYPE html>\n"
+                                        f"<html lang=\"en\">\n"
+                                        f"<head>\n"
+                                        f"    <meta charset=\"UTF-8\">\n"
+                                        f"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                                        f"    <title>suno音乐视频预览</title>\n"
+                                        f"    <style>\n"
+                                        f"        body, html {{\n"
+                                        f"            margin: 0;\n"
+                                        f"            padding: 0;\n"
+                                        f"            width: 100%;\n"
+                                        f"            height: 100%;\n"
+                                        f"            display: flex;\n"
+                                        f"            justify-content: center;\n"
+                                        f"            align-items: center;\n"
+                                        f"            background-color: black;\n"
+                                        f"        }}\n"
+                                        f"        video {{\n"
+                                        f"            max-width: 100%;\n"
+                                        f"            max-height: 100%;\n"
+                                        f"        }}\n"
+                                        f"    </style>\n"
+                                        f"</head>\n"
+                                        f"<body>\n"
+                                        f"    <video controls>\n"
+                                        f"        <source src=\"https://cdn1.suno.ai/{song_id_1}.mp4\" type=\"video/mp4\">\n"
+                                        f"    </video>\n"
+                                        f"</body>\n"
+                                        f"</html>\n"
+                                        f"```\n"
+                                    )
 
-                                    ```html
-                                    <!DOCTYPE html>
-                                    <html lang="en">
-                                    <head>
-                                        <meta charset="UTF-8">
-                                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                        <title>suno音乐视频预览</title>
-                                        <style>
-                                            body, html {{
-                                                margin: 0;
-                                                padding: 0;
-                                                width: 100%;
-                                                height: 100%;
-                                                display: flex;
-                                                justify-content: center;
-                                                align-items: center;
-                                                background-color: black;
-                                            }}
-                                            video {{
-                                                max-width: 100%;
-                                                max-height: 100%;
-                                            }}
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <video controls>
-                                            <source src="https://cdn1.suno.ai/{song_id_1}.mp4" type="video/mp4">
-                                        </video>
-                                    </body>
-                                    </html>
-                                    ```
-                                    """
                                 yield str(
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Aideo_Markdown_Content}, "finish_reason": None}]})}\n\n""")
                                 yield str(
