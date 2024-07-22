@@ -169,7 +169,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                     try:
                         prompt = more_information_["prompt"]
                         if prompt is not None and prompt != '':
-                            prompt_data = f"### 📖 完整歌词\n\n```\n{prompt}\n```\n\n"
+                            prompt_data = f"### 📖 完整歌词\n\n```text\n{prompt}\n```\n\n"
                             yield str(
                                 f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": prompt_data}, "finish_reason": None}]})}\n\n""")
                             _return_prompt = True
