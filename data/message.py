@@ -54,7 +54,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
         cookie = None
         song_gen = None
         try:
-            tem_text = "\n### 🤯 Creating\n\n```suno\n{prompt:" + f"{chat_user_message}" + "}```\n\n"
+            tem_text = "\n### 🤯 Creating\n\n```suno\n{prompt:" + f"{chat_user_message}" + "}\n```\n\n"
             if len(chat_user_message) > 200:
                 raise MaxTokenException(f"{tem_text}### 🚨 违规\n\n- **歌曲提示词**：`{chat_user_message}`，"
                                         f"输入的歌曲提示词长度超过`200`，歌曲创作失败😭\n\n### "
