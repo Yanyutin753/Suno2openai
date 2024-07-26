@@ -121,11 +121,24 @@ class SongsGen:
                 # 获取认证令牌
                 auth_token = await self.get_auth_token()
                 # 更新请求头信息
-                self.request_headers["Authorization"] = f"Bearer {auth_token}"
-                self.request_headers[
-                    "User-Agent"] = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                                     "Chrome/58.0.3029.110 Safari/537.3")
-
+                self.request_headers.update({
+                    "Authorization": f"Bearer {auth_token}",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+                    "Origin": "https://suno.com",
+                    "Referer": "https://suno.com/",
+                    "Accept": "*/*",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+                    "Affiliate-Id": "undefined",
+                    "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"',
+                    "Sec-Ch-Ua-Mobile": "?0",
+                    "Sec-Ch-Ua-Platform": '"Windows"',
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "cross-site",
+                    "X-Priority": "u=1, i"  # 假设这是一个自定义头信息
+                })
+                
                 async with session.get("https://studio-api.suno.ai/api/billing/info/", proxy=self.proxy,
                                        headers=self.request_headers) as response:
                     # 检查响应状态码
