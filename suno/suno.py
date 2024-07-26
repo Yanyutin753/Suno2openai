@@ -127,7 +127,6 @@ class SongsGen:
                 "Origin": "https://suno.com",
                 "Referer": "https://suno.com/",
                 "Accept": "*/*",
-                "Accept-Encoding": "gzip, deflate, br, zstd",
                 "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
                 "Affiliate-Id": "undefined",
                 "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"',
