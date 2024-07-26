@@ -13,7 +13,7 @@ VERSION = "0.2.3"
 # BASE_URL
 BASE_URL = os.getenv('BASE_URL', 'https://studio-api.suno.ai')
 # CLERK_JS_VERSION
-CLERK_JS_VERSION = os.getenv('CLERK_JS_VERSION', '4.73.3')
+CLERK_JS_VERSION = os.getenv('CLERK_JS_VERSION', '4.73.4')
 # SESSION_ID
 SESSION_ID = os.getenv('SESSION_ID')
 # 代理
