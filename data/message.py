@@ -400,3 +400,4 @@ def request_chat(start_time, db_manager, data, content_all, chat_id, timeStamp, 
     finally:
         loop.close()
         return result
+

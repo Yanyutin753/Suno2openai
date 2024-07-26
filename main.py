@@ -20,7 +20,7 @@ from data.message import response_async
 from process import process_cookies
 from util.config import (SQL_IP, SQL_DK, USER_NAME,
                          SQL_PASSWORD, SQL_NAME, COOKIES_PREFIX,
-                         BATCH_SIZE, AUTH_KEY)
+                         BATCH_SIZE, AUTH_KEY, update_clerk_js_version)
 from util.logger import logger
 from util.sql_uilts import DatabaseManager
 from util.tool import generate_random_string_async, generate_timestamp_async
@@ -83,6 +83,7 @@ async def cron_delete_cookies():
 async def cron_optimize_cookies():
     await cron_refresh_cookies()
     await cron_delete_cookies()
+    update_clerk_js_version()
 
 
 # 初始化所有songID
@@ -120,14 +121,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     finally:
         # 停止调度器
         scheduler.shutdown(wait=True)
-        # 关闭数据库连接池
+        loop = None
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                loop.create_task(db_manager.close_db_pool())
-                await asyncio.sleep(3)
+                asyncio.run_coroutine_threadsafe(db_manager.close_db_pool(), loop)
             else:
-                await loop.run_until_complete(db_manager.close_db_pool())
+                loop.run_until_complete(db_manager.close_db_pool())
         except Exception as e:
             print(f"Cleanup error: {e}")
         finally:

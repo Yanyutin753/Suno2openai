@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import aiohttp
+import requests
 from fake_useragent import UserAgent
 
 from util import utils
@@ -107,41 +108,36 @@ class SongsGen:
             jwt_token = await self._get_jwt_token(session_id)
             if w is not None:
                 return jwt_token, session_id
+            logger.info(f"获取get_auth_token成功: {jwt_token}")
             return jwt_token
         except Exception as e:
+            logger.error(f"获取get_auth_token失败: {e}")
             raise Exception(f"获取get_auth_token失败: {e}")
 
     # 获取剩余次数
     async def get_limit_left(self) -> int:
-        try:
-            # 使用上下文管理器创建客户端会话
-            async with aiohttp.ClientSession(cookies=self.cookie_string) as request_session:
-                try:
-                    # 获取认证令牌
-                    auth_token = await self.get_auth_token()
-                    # 更新请求头信息
-                    self.request_headers["Authorization"] = f"Bearer {auth_token}"
-                    self.request_headers["user-agent"] = ua.edge
-                    request_session.headers.update(self.request_headers)
+        async with aiohttp.ClientSession() as session:
+            try:
+                # 获取认证令牌
+                auth_token = await self.get_auth_token()
+                # 更新请求头信息
+                self.request_headers["Authorization"] = f"Bearer {auth_token}"
+                self.request_headers[
+                    "User-Agent"] = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                                     "Chrome/58.0.3029.110 Safari/537.3")
 
-                    # 发送请求获取剩余次数信息
-                    async with request_session.get(
-                            "https://studio-api.suno.ai/api/billing/info/", proxy=self.proxy
-                    ) as response:
-                        # 检查响应状态码
-                        response.raise_for_status()
-                        # 解析响应数据
-                        data = await response.json()
-                        # 计算并返回剩余次数
-                        return int(data["total_credits_left"] / 10)
-                except Exception as e:
-                    # 记录获取剩余次数过程中的异常
-                    logger.error(f"获取get_limit_left失败: {e}")
-                    return -1
-        except Exception as outer_e:
-            # 记录会话创建过程中的异常
-            logger.error(f"无法建立会话: {outer_e}")
-            return -1
+                async with session.get("https://studio-api.suno.ai/api/billing/info/", proxy=self.proxy,
+                                       headers=self.request_headers) as response:
+                    # 检查响应状态码
+                    response.raise_for_status()
+                    # 解析响应数据
+                    data = await response.json()
+                    logger.info(f"get_limit_left_data:{data}")
+                    # 计算并返回剩余次数
+                    return int(data["total_credits_left"] / 10)
+            except Exception as e:
+                logger.error(f"获取get_limit_left失败: {e}")
+                return -1
 
     async def get_limit_finally(self) -> int:
         try:

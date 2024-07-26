@@ -1,6 +1,7 @@
 import os
 import time
 
+import requests
 from dotenv import load_dotenv
 
 from util.logger import logger
@@ -12,8 +13,28 @@ VERSION = "0.2.3"
 
 # BASE_URL
 BASE_URL = os.getenv('BASE_URL', 'https://studio-api.suno.ai')
+
 # CLERK_JS_VERSION
 CLERK_JS_VERSION = os.getenv('CLERK_JS_VERSION', '4.73.4')
+try:
+    response_name = requests.get("https://api.github.com/repos/clerk/javascript/releases")
+    if response_name and response_name.status_code == 200:
+        CLERK_JS_VERSION = response_name.json()[0].get('tag_name').split('@')[-1]
+except Exception as e:
+    logger.error(f"Failed to get clerk.js version: {e}")
+
+
+def update_clerk_js_version():
+    global CLERK_JS_VERSION
+    try:
+        response = requests.get("https://api.github.com/repos/clerk/javascript/releases")
+        if response and response.status_code == 200:
+            CLERK_JS_VERSION = response.json()[0].get('tag_name').split('@')[-1]
+            logger.info(f"Successfully updated clerk.js version to {CLERK_JS_VERSION}")
+    except Exception as e:
+        logger.error(f"Failed to get clerk.js version: {e}")
+
+
 # SESSION_ID
 SESSION_ID = os.getenv('SESSION_ID')
 # 代理
