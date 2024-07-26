@@ -116,41 +116,39 @@ class SongsGen:
 
     # 获取剩余次数
     async def get_limit_left(self) -> int:
-        async with aiohttp.ClientSession() as session:
-            try:
-                # 获取认证令牌
-                auth_token = await self.get_auth_token()
-                # 更新请求头信息
-                self.request_headers.update({
-                    "Authorization": f"Bearer {auth_token}",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-                    "Origin": "https://suno.com",
-                    "Referer": "https://suno.com/",
-                    "Accept": "*/*",
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-                    "Affiliate-Id": "undefined",
-                    "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"',
-                    "Sec-Ch-Ua-Mobile": "?0",
-                    "Sec-Ch-Ua-Platform": '"Windows"',
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "cross-site",
-                    "X-Priority": "u=1, i"  # 假设这是一个自定义头信息
-                })
-                
-                async with session.get("https://studio-api.suno.ai/api/billing/info/", proxy=self.proxy,
-                                       headers=self.request_headers) as response:
-                    # 检查响应状态码
-                    response.raise_for_status()
-                    # 解析响应数据
-                    data = await response.json()
-                    logger.info(f"get_limit_left_data:{data}")
-                    # 计算并返回剩余次数
-                    return int(data["total_credits_left"] / 10)
-            except Exception as e:
-                logger.error(f"获取get_limit_left失败: {e}")
-                return -1
+        try:
+            # 获取认证令牌
+            auth_token = await self.get_auth_token()
+            # 更新请求头信息
+            request_headers = ({
+                "Authorization": f"Bearer {auth_token}",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                              "Chrome/58.0.3029.110 Safari/537.3",
+                "Origin": "https://suno.com",
+                "Referer": "https://suno.com/",
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip, deflate, br, zstd",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+                "Affiliate-Id": "undefined",
+                "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"',
+                "Sec-Ch-Ua-Mobile": "?0",
+                "Sec-Ch-Ua-Platform": '"Windows"',
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "cross-site",
+                "X-Priority": "u=1, i"
+            })
+
+            response = requests.get("https://studio-api.suno.ai/api/billing/info/",
+                                    headers=request_headers, proxies=self.proxy)
+            response.raise_for_status()
+            logger.info(response.text)
+            data = response.json()
+            return int(data["total_credits_left"] / 10)
+
+        except Exception as e:
+            logger.error(f"获取get_limit_left失败: {e}")
+            return -1
 
     async def get_limit_finally(self) -> int:
         try:
