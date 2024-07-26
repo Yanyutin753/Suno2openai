@@ -120,10 +120,9 @@ class SongsGen:
             # 获取认证令牌
             auth_token = await self.get_auth_token()
             # 更新请求头信息
-            request_headers = ({
+            request_headers = {
                 "Authorization": f"Bearer {auth_token}",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                              "Chrome/58.0.3029.110 Safari/537.3",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
                 "Origin": "https://suno.com",
                 "Referer": "https://suno.com/",
                 "Accept": "*/*",
@@ -136,19 +135,21 @@ class SongsGen:
                 "Sec-Fetch-Mode": "cors",
                 "Sec-Fetch-Site": "cross-site",
                 "X-Priority": "u=1, i"
-            })
+            }
 
-            response = requests.get("https://studio-api.suno.ai/api/billing/info/",
-                                    headers=request_headers, proxies=self.proxy)
-            logger.info(response.text)
-            response.raise_for_status()
-            data = response.json()
-            return int(data["total_credits_left"] / 10)
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://studio-api.suno.ai/api/billing/info/",
+                                       headers=request_headers, proxy=self.proxy) as response:
+                    response_text = await response.text()
+                    logger.info(response_text)
+                    response.raise_for_status()
+                    data = await response.json()
+                    return int(data["total_credits_left"] / 10)
 
         except Exception as e:
             logger.error(f"获取get_limit_left失败: {e}")
             return -1
-
+    
     async def get_limit_finally(self) -> int:
         try:
             # 使用上下文管理器创建客户端会话
