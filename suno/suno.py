@@ -141,8 +141,8 @@ class SongsGen:
 
             response = requests.get("https://studio-api.suno.ai/api/billing/info/",
                                     headers=request_headers, proxies=self.proxy)
-            response.raise_for_status()
             logger.info(response.text)
+            response.raise_for_status()
             data = response.json()
             return int(data["total_credits_left"] / 10)
 
