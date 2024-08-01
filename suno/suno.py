@@ -12,7 +12,7 @@ ua = UserAgent(browsers=["edge"])
 get_session_url = f"https://clerk.suno.com/v1/client?_clerk_js_version={CLERK_JS_VERSION}"
 
 exchange_token_url = (
-    "https://clerk.suno.com/v1/client/sessions/{sid}/tokens?_client?_clerk_js_version={CLERK_JS_VERSION}"
+    "https://clerk.suno.com/v1/client/sessions/{sid}/tokens?_clerk_js_version={CLERK_JS_VERSION}"
 )
 
 base_url = "https://studio-api.suno.ai"
@@ -46,7 +46,19 @@ class SongsGen:
         try:
             self.token_headers = {
                 "User-Agent": ua.edge,
-                "Impersonate": browser_version,
+                "Content-Type": "application/x-www-form-urlencoded",
+                # "Impersonate": browser_version,
+                "accept-encoding": "gzip, deflate, br, zstd",
+                "Accept": "*/*",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+                "Affiliate-Id": "undefined",
+                "Sec-Ch-Ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"',
+                "Sec-Ch-Ua-Mobile": "?0",
+                "Sec-Ch-Ua-Platform": '"Windows"',
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "cross-site",
+                "X-Priority": "u=1, i"
             }
             self.request_headers = {
                 "Accept-Encoding": "gzip, deflate, br",
