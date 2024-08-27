@@ -7,8 +7,8 @@ import aiofiles
 from util.config import DATA_PATH
 from util.logger import logger
 
-# 假设你的JSON文件路径为 'data.json'
-file_path = DATA_PATH + '/data.json'
+# 数据文件路径
+file_path = DATA_PATH + '/data.txt'
 # 创建一个锁，用于保证数据一致性
 write_lock = asyncio.Lock()
 
@@ -31,17 +31,13 @@ def initialize_json_file():
 
 
 # 添加json数据
-async def add_json(new_data):
+async def add_message_file(new_data):
     async with write_lock:
         try:
-            # 异步方式打开文件并写入数据
             async with aiofiles.open(file_path, 'a', encoding='utf-8') as file:
                 json_string = json.dumps(new_data, ensure_ascii=False)
                 await file.write(json_string + '\n')
-
-            # 日志记录
             logger.info("新的JSON数据已成功追加到文件中。")
-
         except Exception as e:
             logger.error(f"写入文件时出错: {e}")
 
@@ -52,8 +48,8 @@ async def add_json(new_data):
 #
 #     # 异步地添加 JSON 数据
 #     await asyncio.gather(
-#         add_json_async(new_data1),
-#         add_json_async(new_data2)
+#         add_message_file(new_data1),
+#         add_message_file(new_data2)
 #     )
 #
 #

@@ -8,7 +8,7 @@ from starlette.responses import StreamingResponse, JSONResponse
 
 from exception.MaxTokenException import MaxTokenException
 from exception.PromptException import PromptException
-from log.log import add_json
+from log.log import add_message_file
 from suno.suno import SongsGen
 from util.config import RETRIES, MAX_TIME, SAVE_DATA
 from util.logger import logger
@@ -280,7 +280,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                 _return_Forever_url = True
                                 # 添加请求数据到data.json
                                 if SAVE_DATA:
-                                    await add_json(music_message)
+                                    await add_message_file(music_message)
                                 # 跳出所有循环
                                 return
 
