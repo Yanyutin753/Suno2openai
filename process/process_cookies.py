@@ -26,8 +26,12 @@ class processCookies:
                 logger.info(f"该账号剩余次数: {remaining_count}，添加失败！")
                 return False
             else:
-                logger.info(f"该账号剩余次数: {remaining_count}，{tem_word}成功！")
-                await db_manage.insert_or_update_cookie(cookie=cookie, count=remaining_count)
+                if remaining_count == -1:
+                    await db_manage.delete_cookies(cookie)
+                    logger.error(f"该账号剩余次数: {remaining_count}，{tem_word}成功，已成功删除！")
+                else:
+                    await db_manage.insert_or_update_cookie(cookie=cookie, count=remaining_count)
+                    logger.info(f"该账号剩余次数: {remaining_count}，{tem_word}成功！")
                 return True
         except Exception as e:
             if not is_insert:
