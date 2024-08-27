@@ -284,7 +284,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
                                 _return_Forever_url = True
                                 # 跳出所有循环
-                                return
+                                break
 
                             else:
                                 content_wait = "🎵"
@@ -293,7 +293,6 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                 continue
                         except:
                             pass
-            break
 
         except MaxTokenException as e:
             yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": str(e)}, "finish_reason": None}]})}\n\n"""
