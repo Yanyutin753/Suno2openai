@@ -1,12 +1,15 @@
 import json
 import os
+import re
 from http.cookies import SimpleCookie
 
 import aiohttp
+import requests
 from curl_cffi.requests import Cookies
 from dotenv import load_dotenv
 
 from util.config import PROXY
+from util.logger import logger
 
 load_dotenv()
 
@@ -109,3 +112,22 @@ def parse_cookie_string(cookie_string: str) -> Cookies:
     except (IndexError, AttributeError) as e:
         raise Exception(f"解析cookie时出错: {e}")
     return Cookies(cookies_dict)
+
+
+# 更新CLERK_JS_VERSION
+def update_clerk_js_version():
+    try:
+        response_name = requests.get("https://api.github.com/repos/clerk/javascript/releases", proxies=PROXY)
+        if response_name and response_name.status_code == 200:
+            res = response_name.json()
+            pattern = r'@clerk/clerk-js@([\d\.]+)'
+            matches = re.findall(pattern, str(res))
+            if matches:
+                largest_version = max(matches, key=lambda v: list(map(int, v.split('.'))))
+                return largest_version
+            else:
+                logger.error("没有匹配到 @clerk/clerk-js@ 后面的版本号")
+                return None
+    except Exception as e:
+        logger.error(f"Failed to get clerk.js version: {e}")
+        return None

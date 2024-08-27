@@ -20,7 +20,7 @@ from data.message import response_async
 from process import process_cookies
 from util.config import (SQL_IP, SQL_DK, USER_NAME,
                          SQL_PASSWORD, SQL_NAME, COOKIES_PREFIX,
-                         BATCH_SIZE, AUTH_KEY, update_clerk_js_version)
+                         BATCH_SIZE, AUTH_KEY, update_version)
 from util.logger import logger
 from util.sql_uilts import DatabaseManager
 from util.tool import generate_random_string_async, generate_timestamp_async
@@ -83,7 +83,7 @@ async def cron_delete_cookies():
 async def cron_optimize_cookies():
     await cron_refresh_cookies()
     await cron_delete_cookies()
-    update_clerk_js_version()
+    update_version()
 
 
 # 初始化所有songID
