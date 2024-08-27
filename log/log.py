@@ -4,10 +4,11 @@ import os
 
 import aiofiles
 
+from util.config import DATA_PATH
 from util.logger import logger
 
 # 假设你的JSON文件路径为 'data.json'
-file_path = 'data.json'
+file_path = DATA_PATH + '/data.json'
 # 创建一个锁，用于保证数据一致性
 write_lock = asyncio.Lock()
 

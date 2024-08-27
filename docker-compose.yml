@@ -8,7 +8,7 @@ services:
       - 8001:8000
     restart: always
     volumes:
-      - ./log:/app/log
+      - ./log/data:/app/log/data
     environment:
       # 默认
       BASE_URL: 'https://studio-api.suno.ai'
@@ -34,6 +34,9 @@ services:
       BATCH_SIZE: 10
       # 最大请求时间（默认5min）
       MAX_TIME: 5
+      # 是否保存数据
+      SAVE_DATA: false
+      # 时区
       TZ: Asia/Shanghai
 
   # 可以用远程或本地数据库
