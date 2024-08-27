@@ -24,6 +24,7 @@ from util.config import (SQL_IP, SQL_DK, USER_NAME,
 from util.logger import logger
 from util.sql_uilts import DatabaseManager
 from util.tool import generate_random_string_async, generate_timestamp_async
+from util.utils import update_clerk_js_version
 
 warnings.filterwarnings("ignore")
 
@@ -83,7 +84,7 @@ async def cron_delete_cookies():
 async def cron_optimize_cookies():
     await cron_refresh_cookies()
     await cron_delete_cookies()
-    update_version()
+    update_version(update_clerk_js_version())
 
 
 # 初始化所有songID

@@ -4,7 +4,6 @@ import time
 from dotenv import load_dotenv
 
 from util.logger import logger
-from util.utils import update_clerk_js_version
 
 load_dotenv(encoding="ascii")
 
@@ -18,9 +17,6 @@ BASE_URL = os.getenv('BASE_URL', 'https://studio-api.suno.ai')
 
 # CLERK_JS_VERSION
 CLERK_JS_VERSION = os.getenv('CLERK_JS_VERSION', '4.73.4')
-
-# 更新CLERK_JS_VERSION
-CLERK_JS_VERSION = update_clerk_js_version()
 
 # SESSION_ID
 SESSION_ID = os.getenv('SESSION_ID')
@@ -70,6 +66,8 @@ logger.info(f"BATCH_SIZE: {BATCH_SIZE}")
 logger.info("==========================================")
 
 
-def update_version():
+# 更新版本号
+def update_version(version):
     global CLERK_JS_VERSION
-    CLERK_JS_VERSION = update_clerk_js_version()
+    CLERK_JS_VERSION = version
+    logger.info(f"CLERK_JS_VERSION更新为: {CLERK_JS_VERSION}")
