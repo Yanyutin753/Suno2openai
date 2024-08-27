@@ -13,3 +13,4 @@ starlette==0.37.2
 fake_useragent==1.5.1
 cryptography==42.0.8
 Brotli
+aiofiles

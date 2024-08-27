@@ -8,8 +8,9 @@ from starlette.responses import StreamingResponse, JSONResponse
 
 from exception.MaxTokenException import MaxTokenException
 from exception.PromptException import PromptException
+from log.log import add_json
 from suno.suno import SongsGen
-from util.config import RETRIES, MAX_TIME
+from util.config import RETRIES, MAX_TIME, SAVE_DATA
 from util.logger import logger
 from util.tool import get_clips_ids, check_status_complete, calculate_token_costs
 from util.utils import generate_music, get_feed
@@ -19,7 +20,9 @@ from util.utils import generate_music, get_feed
 async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                         timeStamp, ModelVersion, tags=None, title=None,
                         continue_at=None, continue_clip_id=None):
+    music_message = {}
     chat_user_message = str(chat_user_message).strip()
+    music_message["user_message"] = chat_user_message
     for try_count in range(RETRIES):
         user_html = False
         if ModelVersion == "suno-v3":
@@ -143,6 +146,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                 elif not _return_title:
                     try:
                         title = now_data[0]["title"]
+                        music_message["title"] = title
                         if title != '':
                             title_data = f"- **🤖 歌名**：{title} \n"
                             yield """data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": title_data}, "finish_reason": None}]})}\n\n"""
@@ -155,6 +159,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                 elif not _return_tags:
                     try:
                         tags = more_information_["tags"]
+                        music_message["tags"] = tags
                         if tags is not None and tags != "":
                             tags_data = f"- **💄 类型**：{tags} \n\n"
                             yield str(
@@ -168,6 +173,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                 elif not _return_prompt:
                     try:
                         prompt = more_information_["prompt"]
+                        music_message["lyric"] = prompt
                         if prompt is not None and prompt != '':
                             prompt_data = f"### 📖 完整歌词\n\n```text\n{prompt}\n```\n\n"
                             yield str(
@@ -181,6 +187,7 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                 elif not _return_image_url:
                     try:
                         if now_data[0].get('image_url') is not None:
+                            music_message["image_url"] = now_data[0]['image_url']
                             image_url_small_data = f"### 🖼️ 歌曲图片\n\n"
                             image_url_lager_data = f"![image_large_url]({now_data[0]['image_large_url']}) \n\n### 🤩 即刻享受\n"
                             yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": image_url_small_data}, "finish_reason": None}]})}\n\n"""
@@ -214,7 +221,11 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                     if not _return_Forever_url:
                         try:
                             if check_status_complete(now_data, start_time):
-                                Aideo_Markdown_Content = (f""
+                                music_message["Audio_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp3"
+                                music_message["Audio_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp3"
+                                music_message["Video_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp4"
+                                music_message["Video_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp4"
+                                Audio_Markdown_Content = (f""
                                                           f"\n\n### 🎷 CDN音乐链接\n\n"
                                                           f"- **🎧 音乐1️⃣**：{'https://cdn1.suno.ai/' + song_id_1 + '.mp3'} \n"
                                                           f"- **🎧 音乐2️⃣**：{'https://cdn1.suno.ai/' + song_id_2 + '.mp3'} \n")
@@ -262,11 +273,14 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                     )
 
                                 yield str(
-                                    f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Aideo_Markdown_Content}, "finish_reason": None}]})}\n\n""")
+                                    f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Audio_Markdown_Content}, "finish_reason": None}]})}\n\n""")
                                 yield str(
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Video_Markdown_Content}, "finish_reason": None}]})}\n\n""")
                                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
                                 _return_Forever_url = True
+                                # 添加请求数据到data.json
+                                if SAVE_DATA:
+                                    await add_json(music_message)
                                 # 跳出所有循环
                                 return
 
@@ -400,4 +414,3 @@ def request_chat(start_time, db_manager, data, content_all, chat_id, timeStamp, 
     finally:
         loop.close()
         return result
-

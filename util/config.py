@@ -41,6 +41,8 @@ RETRIES = int(os.getenv('RETRIES', 5))
 BATCH_SIZE = int(os.getenv('BATCH_SIZE', 10))
 # 最大等待时间（分钟）
 MAX_TIME = int(os.getenv('MAX_TIME', 5))
+# 是否保存请求数据到本地
+SAVE_DATA = os.getenv('SAVE_DATA', False)
 
 # 处理措施
 if not PROXY:
@@ -63,6 +65,7 @@ logger.info(f"AUTH_KEY: {AUTH_KEY}")
 logger.info(f"RETRIES: {RETRIES}")
 logger.info(f"MAX_TIME: {MAX_TIME}")
 logger.info(f"BATCH_SIZE: {BATCH_SIZE}")
+logger.info(f"SAVE_DATA: {SAVE_DATA}")
 logger.info("==========================================")
 
 

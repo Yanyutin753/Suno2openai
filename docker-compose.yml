@@ -7,6 +7,8 @@ services:
     ports:
       - 8001:8000
     restart: always
+    volumes:
+      - ./log:/app/log
     environment:
       # 默认
       BASE_URL: 'https://studio-api.suno.ai'

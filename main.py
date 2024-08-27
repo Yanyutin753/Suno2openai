@@ -154,7 +154,7 @@ async def get_root():
 
 
 @app.post("/v1/chat/completions")
-async def get_last_user_message(data: schemas.Data, authorization: str = Header(...)):
+async def get_message(data: schemas.Data, authorization: str = Header(...)):
     start_time = time.time()
     content_all = ''
     if SQL_IP == '' or SQL_PASSWORD == '' or SQL_NAME == '':
