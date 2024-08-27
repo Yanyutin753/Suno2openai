@@ -221,10 +221,15 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                     if not _return_Forever_url:
                         try:
                             if check_status_complete(now_data, start_time):
+                                # 生成歌曲信息
                                 music_message["Audio_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp3"
                                 music_message["Audio_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp3"
                                 music_message["Video_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp4"
                                 music_message["Video_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp4"
+                                # 添加请求数据到data.json
+                                if SAVE_DATA:
+                                    await add_message_file(music_message)
+
                                 Audio_Markdown_Content = (f""
                                                           f"\n\n### 🎷 CDN音乐链接\n\n"
                                                           f"- **🎧 音乐1️⃣**：{'https://cdn1.suno.ai/' + song_id_1 + '.mp3'} \n"
@@ -278,9 +283,6 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Video_Markdown_Content}, "finish_reason": None}]})}\n\n""")
                                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
                                 _return_Forever_url = True
-                                # 添加请求数据到data.json
-                                if SAVE_DATA:
-                                    await add_message_file(music_message)
                                 # 跳出所有循环
                                 return
 
