@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import asyncio
+import base64
 import datetime
 import json
 import time
@@ -7,6 +8,7 @@ import warnings
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+import aiohttp
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI, HTTPException, Query
@@ -172,9 +174,34 @@ async def get_message(data: schemas.Data, authorization: str = Header(...)):
         raise HTTPException(status_code=400, detail=f"生成聊天 ID 或时间戳时出错: {str(e)}")
 
     last_user_content = None
+    images_b64 = []
     for message in reversed(data.messages):
         if message.role == "user":
-            last_user_content = message.content
+            if isinstance(message.content, list):
+                for part in message.content:
+                    if isinstance(part, dict) and "type" in part:
+                        if part["type"] == "text":
+                            last_user_content = part["text"]
+                        elif part["type"] == "image_url":
+                            image_url = part["image_url"]["url"]
+                            if image_url.startswith('data:'):
+                                if image_url.startswith('data:image/'):
+                                    images_b64.append(image_url)
+                            else:
+                                try:
+                                    async with aiohttp.ClientSession() as session:
+                                        async with session.get(image_url) as response:
+                                            if response.status == 200:
+                                                content_type = response.headers.get('Content-Type')
+                                                if content_type and content_type.startswith('image/'):
+                                                    image_content = await response.read()
+                                                    # 将二进制数据编码为base64字符串
+                                                    image_b64 = base64.b64encode(image_content).decode('utf-8')
+                                                    images_b64.append(f"data:{content_type};base64,{image_b64}")
+                                except aiohttp.ClientError as e:
+                                    logger.error(f"Error fetching image: {e}")
+            else:
+                last_user_content = message.content
             break
 
     if last_user_content is None:
@@ -192,7 +219,7 @@ async def get_message(data: schemas.Data, authorization: str = Header(...)):
     try:
         # 协程处理
         return await response_async(start_time, db_manager, data, content_all,
-                                    chat_id, timeStamp, last_user_content, headers)
+                                    chat_id, timeStamp, last_user_content, images_b64, headers)
     except HTTPException as http_exc:
         raise http_exc
 

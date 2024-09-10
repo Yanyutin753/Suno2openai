@@ -17,7 +17,7 @@ from util.utils import generate_music, get_feed
 
 
 # 流式请求
-async def generate_data(start_time, db_manager, chat_user_message, chat_id,
+async def generate_data(start_time, db_manager, chat_user_message, images_b64, chat_id,
                         timeStamp, ModelVersion, tags=None, title=None,
                         continue_at=None, continue_clip_id=None):
     music_message = {}
@@ -38,10 +38,11 @@ async def generate_data(start_time, db_manager, chat_user_message, chat_id,
 
         data = {
             "gpt_description_prompt": f"{chat_user_message}",
-            "prompt": "",
             "mv": Model,
-            "title": "",
-            "tags": ""
+            "prompt": "",
+            "make_instrumental": False,
+            "user_uploaded_images_b64": images_b64,
+            "generation_type": "TEXT"
         }
 
         if continue_clip_id is not None:
@@ -350,10 +351,11 @@ async def end_chat(cookie, db_manager, song_gen):
 
 
 # 返回消息，使用协程
-async def response_async(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, headers):
+async def response_async(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, images_b64,
+                         headers):
     if not data.stream:
         try:
-            async for data_string in generate_data(start_time, db_manager, last_user_content,
+            async for data_string in generate_data(start_time, db_manager, last_user_content, images_b64,
                                                    chat_id, timeStamp, data.model):
                 try:
                     json_data = data_string.split('data: ')[1].strip()
@@ -396,20 +398,22 @@ async def response_async(start_time, db_manager, data, content_all, chat_id, tim
         return json_string
     else:
         try:
-            data_generator = generate_data(start_time, db_manager, last_user_content, chat_id, timeStamp, data.model)
+            data_generator = generate_data(start_time, db_manager, last_user_content, images_b64, chat_id, timeStamp,
+                                           data.model)
             return StreamingResponse(data_generator, headers=headers, media_type="text/event-stream")
         except Exception as e:
             return JSONResponse(status_code=500, content={"detail": f"生成流式响应时出错: {str(e)}"})
 
 
 # 线程用于请求
-def request_chat(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, headers):
+def request_chat(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, images_b64, headers):
     loop = asyncio.new_event_loop()
     result = None
     try:
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(
-            response_async(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, headers))
+            response_async(start_time, db_manager, data, content_all, chat_id, timeStamp, last_user_content, images_b64,
+                           headers))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"请求聊天时出错: {str(e)}")
     finally:
