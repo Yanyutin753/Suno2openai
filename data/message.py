@@ -245,7 +245,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                 else:
                                     Video_Markdown_Content = (
                                         f"### 📺 CDN视频链接\n\n"
-                                        f"```html\n"
+                                        f"```suno\n"
                                         f"<!DOCTYPE html>\n"
                                         f"<html lang=\"en\">\n"
                                         f"<head>\n"
