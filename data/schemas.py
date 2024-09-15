@@ -28,7 +28,7 @@ class GenerateBase(BaseModel):
 
 class Message(BaseModel):
     role: str
-    content: any
+    content: Optional[Any] = None
 
 
 class Data(BaseModel):
