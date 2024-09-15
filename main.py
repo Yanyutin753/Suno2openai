@@ -181,7 +181,7 @@ async def get_message(data: schemas.Data, authorization: str = Header(...)):
                 for part in message.content:
                     if isinstance(part, dict) and "type" in part:
                         if part["type"] == "text":
-                            last_user_content += part["text"]
+                            last_user_content = part["text"]
                         elif part["type"] == "image_url":
                             image_url = part["image_url"]["url"]
                             if image_url.startswith('data:'):
