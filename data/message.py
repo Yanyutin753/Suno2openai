@@ -244,8 +244,8 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                                               f"**🤗还想听更多歌吗，快来告诉我**🎶✨\n")
                                 else:
                                     Video_Markdown_Content = (
-                                        f"### 📺 CDN视频链接\n\n"
-                                        f"```suno\n"
+                                        f"### 📺 CDN视频预览\n\n"
+                                        f"```MP4\n"
                                         f"<!DOCTYPE html>\n"
                                         f"<html lang=\"en\">\n"
                                         f"<head>\n"
