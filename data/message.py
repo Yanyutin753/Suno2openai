@@ -88,6 +88,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
             _return_video_url = False
             _return_audio_url = False
             _return_Forever_url = False
+            _is_forbidden = False
 
             token, sid = await song_gen.get_auth_token(w=1)
 
@@ -308,24 +309,24 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
             break
 
         except Exception as e:
+            _is_forbidden = True
             if try_count < RETRIES - 1:
                 logger.error(f"第 {try_count + 1} 次尝试歌曲失败，错误为：{str(e)}，重试中......")
-                continue
             else:
                 logger.error(f"生成歌曲错误，尝试歌曲到达最大次数，错误为：{str(e)}")
                 yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": "生成歌曲错误，尝试重新创作歌曲到达最大次数😭"}, "finish_reason": None}]})}\n\n"""
                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
 
         finally:
-            clean_up(cookie, db_manager, song_gen)
+            clean_up(cookie, db_manager, song_gen, _is_forbidden)
 
 
-def clean_up(cookie, db_manager, song_gen):
+def clean_up(cookie, db_manager, song_gen, is_forbidden):
     loop = asyncio.get_event_loop()
 
     async def async_cleanup_wrapper():
         try:
-            await end_chat(cookie, db_manager, song_gen)
+            await end_chat(cookie, db_manager, song_gen, is_forbidden)
         except Exception as e:
             logger.error(f"结束聊天时出错: {str(e)}")
 
@@ -337,11 +338,11 @@ def clean_up(cookie, db_manager, song_gen):
         loop.run_until_complete(async_cleanup_wrapper())
 
 
-async def end_chat(cookie, db_manager, song_gen):
+async def end_chat(cookie, db_manager, song_gen, is_forbidden):
     try:
         start_time = int(time.time())
         if cookie is not None:
-            remaining_count = await song_gen.get_limit_left()
+            remaining_count = await song_gen.get_limit_left() if not is_forbidden else 0
             await db_manager.delete_song_ids(remaining_count, cookie)
             end_time = int(time.time())
             logger.info(

@@ -1,5 +1,6 @@
-import aiomysql
 import json
+
+import aiomysql
 from fastapi import HTTPException
 from tenacity import retry, stop_after_attempt, wait_random
 
@@ -123,38 +124,37 @@ class DatabaseManager:
                     # 开始事务
                     await conn.begin()
 
-                    # 从最旧的N条记录中随机选取一个可用的cookie
+                    # 先查询一个不被锁定且可用的cookie
                     await cursor.execute('''
-                        SELECT cookie
-                        FROM (
-                            SELECT cookie
-                            FROM suno2openai
-                            WHERE songID IS NULL 
-                              AND songID2 IS NULL 
-                              AND count > 0
-                            ORDER BY time ASC
-                            LIMIT 20
-                        ) AS recent_cookies
-                        ORDER BY RAND()
-                        LIMIT 1
-                        FOR UPDATE;
-                    ''')
+                            SELECT cookie FROM suno2openai
+                            WHERE songID IS NULL AND songID2 IS NULL AND count > 0
+                            ORDER BY RAND() LIMIT 1
+                            LOCK IN SHARE MODE;
+                        ''')
                     row = await cursor.fetchone()
                     if not row:
                         raise RuntimeError("未找到可用的suno cookie")
+
                     cookie = row['cookie']
 
-                    # 更新选中的cookie
+                    # 第二个查询，锁定获取的cookie
                     await cursor.execute('''
-                        UPDATE suno2openai
-                        SET count = count - 1, songID = %s, songID2 = %s, time = CURRENT_TIMESTAMP
-                        WHERE cookie = %s AND songID IS NULL AND songID2 IS NULL AND count > 0;
-                    ''', ("tmp", "tmp", cookie))
+                            SELECT cookie FROM suno2openai 
+                            WHERE cookie = %s AND songID IS NULL AND songID2 IS NULL AND count > 0
+                            LIMIT 1 FOR UPDATE;
+                        ''', (cookie,))
 
-                    # 检查是否成功更新
-                    if cursor.rowcount == 0:
+                    row = await cursor.fetchone()
+                    if not row:
                         raise RuntimeError("并发更新cookie时发生并发冲突，重试中...")
 
+                    cookie = row['cookie']
+                    # 然后更新选中的cookie
+                    await cursor.execute('''
+                            UPDATE suno2openai
+                            SET count = count - 1, songID = %s, songID2 = %s, time = CURRENT_TIMESTAMP
+                            WHERE cookie = %s AND songID IS NULL AND songID2 IS NULL AND count > 0;
+                        ''', ("tmp", "tmp", cookie))
                     await conn.commit()
                     return cookie
 
