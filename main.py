@@ -1,21 +1,20 @@
 # -*- coding:utf-8 -*-
+import aiohttp
 import asyncio
 import base64
 import datetime
 import json
 import time
 import warnings
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
-import aiohttp
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.responses import StreamingResponse
+from typing import AsyncGenerator
 
 from data import schemas
 from data.message import response_async
@@ -116,7 +115,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     # 初始化并启动 APScheduler
     scheduler = AsyncIOScheduler()
 
-    scheduler.add_job(cron_optimize_cookies, CronTrigger(hour=13, minute=0), id='Refresh_and_delete_run')
+    scheduler.add_job(cron_optimize_cookies, CronTrigger(hour='8,12,16,20', minute=0), id='Refresh_and_delete_run')
     scheduler.start()
 
     try:

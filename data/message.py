@@ -2,7 +2,6 @@
 import asyncio
 import json
 import time
-
 from fastapi import HTTPException
 from starlette.responses import StreamingResponse, JSONResponse
 
@@ -57,6 +56,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
 
         cookie = None
         song_gen = None
+        _is_forbidden = False
         try:
             tem_text = "\n### 🤯 Creating\n\n```Music\n{prompt:" + f"{chat_user_message}" + "}\n```\n\n"
             if len(chat_user_message) > 200:
@@ -88,7 +88,6 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
             _return_video_url = False
             _return_audio_url = False
             _return_Forever_url = False
-            _is_forbidden = False
 
             token, sid = await song_gen.get_auth_token(w=1)
 
@@ -232,6 +231,8 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                 if SAVE_DATA:
                                     await add_message_file(music_message)
 
+                                await check_link(music_message["Video_URl_1"])
+
                                 Audio_Markdown_Content = (f""
                                                           f"\n\n### 🎷 CDN音乐链接\n\n"
                                                           f"- **🎧 音乐1️⃣**：{'https://cdn1.suno.ai/' + song_id_1 + '.mp3'} \n"
@@ -319,6 +320,19 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
 
         finally:
             clean_up(cookie, db_manager, song_gen, _is_forbidden)
+
+
+async def check_link(url):
+    async with aiohttp.ClientSession() as session:
+        for attempt in range(10):
+            try:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        return
+            except aiohttp.ClientError as e:
+                logger.info(f"链接 {url} 无法访问，错误: {e}，重试次数: {attempt + 1}")
+            await asyncio.sleep(1)
+        logger.info(f"链接 {url} 在10次重试后仍然无法访问")
 
 
 def clean_up(cookie, db_manager, song_gen, is_forbidden):
