@@ -234,7 +234,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                 music_message["Video_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp4"
                                 music_message["Video_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp4"
 
-                                await check_link(music_message["Video_URl_1"])
+                                # await check_link(music_message["Video_URl_1"])
 
                                 Audio_Markdown_Content = (f""
                                                           f"\n\n### 🎷 CDN音乐链接\n\n"
