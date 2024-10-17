@@ -88,6 +88,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
             _return_video_url = False
             _return_audio_url = False
             _return_Forever_url = False
+            _is_not_return = True
 
             token, sid = await song_gen.get_auth_token(w=1)
 
@@ -221,15 +222,17 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                       _return_image_url and _return_audio_url):
                     if not _return_Forever_url:
                         try:
-                            if check_status_complete(now_data, start_time):
+                            if check_status_complete(now_data, start_time) and _is_not_return:
+                                # 添加请求数据到data.json
+                                _is_not_return = False
+                                if SAVE_DATA:
+                                    await add_message_file(music_message)
+
                                 # 生成歌曲信息
                                 music_message["Audio_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp3"
                                 music_message["Audio_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp3"
                                 music_message["Video_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp4"
                                 music_message["Video_URl_2"] = f"https://cdn1.suno.ai/{song_id_2}.mp4"
-                                # 添加请求数据到data.json
-                                if SAVE_DATA:
-                                    await add_message_file(music_message)
 
                                 await check_link(music_message["Video_URl_1"])
 

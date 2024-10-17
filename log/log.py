@@ -32,14 +32,17 @@ def initialize_json_file():
 
 # 添加json数据
 async def add_message_file(new_data):
-    async with write_lock:
-        try:
-            async with aiofiles.open(file_path, 'a', encoding='utf-8') as file:
-                json_string = json.dumps(new_data, ensure_ascii=False)
-                await file.write(json_string + '\n')
-                logger.info("新的JSON数据已成功追加到文件中。")
-        except Exception as e:
-            logger.error(f"写入文件时出错: {e}")
+    try:
+        async with write_lock:
+            try:
+                async with aiofiles.open(file_path, 'a', encoding='utf-8') as file:
+                    json_string = json.dumps(new_data, ensure_ascii=False)
+                    await file.write(json_string + '\n')
+                    logger.info("新的JSON数据已成功追加到文件中")
+            except Exception as e:
+                logger.error(f"写入文件时出错: {e}")
+    except Exception as e:
+        logger.error(f"写入文件时出错: {e}")
 
 # test
 # async def main():
