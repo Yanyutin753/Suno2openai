@@ -292,6 +292,10 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                 # 跳出所有循环
                                 break
 
+                            elif not _is_not_return:
+                                yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
+                                break
+
                             else:
                                 content_wait = "🎵"
                                 yield f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": content_wait}, "finish_reason": None}]})}\n\n"""
