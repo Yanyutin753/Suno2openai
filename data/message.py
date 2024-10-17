@@ -226,7 +226,7 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
                                 # 添加请求数据到data.json
                                 _is_not_return = False
                                 if SAVE_DATA:
-                                    await add_message_file(music_message)
+                                    add_message_file(music_message)
 
                                 # 生成歌曲信息
                                 music_message["Audio_URl_1"] = f"https://cdn1.suno.ai/{song_id_1}.mp3"
@@ -285,9 +285,12 @@ async def generate_data(start_time, db_manager, chat_user_message, images_b64, c
 
                                 yield str(
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Audio_Markdown_Content}, "finish_reason": None}]})}\n\n""")
+
                                 yield str(
                                     f"""data:""" + ' ' + f"""{json.dumps({"id": f"chatcmpl-{chat_id}", "object": "chat.completion.chunk", "model": ModelVersion, "created": timeStamp, "choices": [{"index": 0, "delta": {"content": Video_Markdown_Content}, "finish_reason": None}]})}\n\n""")
+
                                 yield f"""data:""" + ' ' + f"""[DONE]\n\n"""
+
                                 _return_Forever_url = True
                                 # 跳出所有循环
                                 break

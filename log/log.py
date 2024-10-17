@@ -1,16 +1,14 @@
-import asyncio
 import json
 import os
-
-import aiofiles
+import threading
 
 from util.config import DATA_PATH
 from util.logger import logger
 
 # 数据文件路径
 file_path = DATA_PATH + '/data.txt'
-# 创建一个锁，用于保证数据一致性
-write_lock = asyncio.Lock()
+# 创建一个同步锁
+write_lock = threading.Lock()
 
 
 # 初始化JSON文件
@@ -31,31 +29,15 @@ def initialize_json_file():
 
 
 # 添加json数据
-async def add_message_file(new_data):
+def add_message_file(new_data):
     try:
-        async with write_lock:
+        with write_lock:
             try:
-                async with aiofiles.open(file_path, 'a', encoding='utf-8') as file:
+                with open(file_path, 'a', encoding='utf-8') as file:
                     json_string = json.dumps(new_data, ensure_ascii=False)
-                    await file.write(json_string + '\n')
+                    file.write(json_string + '\n')
                     logger.info("新的JSON数据已成功追加到文件中")
             except Exception as e:
                 logger.error(f"写入文件时出错: {e}")
     except Exception as e:
         logger.error(f"写入文件时出错: {e}")
-
-# test
-# async def main():
-#     new_data1 = {"key1": "value1"}
-#     new_data2 = {"key2": "value2"}
-#
-#     # 异步地添加 JSON 数据
-#     await asyncio.gather(
-#         add_message_file(new_data1),
-#         add_message_file(new_data2)
-#     )
-#
-#
-# # 如果你在一个脚本中执行，可以使用以下代码来运行异步主函数
-# if __name__ == "__main__":
-#     asyncio.run(main())
